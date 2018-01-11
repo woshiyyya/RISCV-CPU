@@ -1,20 +1,21 @@
+`include "dcache_one_line.v"
 module dcache_two_way_group(
-	input wire 			enable;
-	input wire			clk;
-	input wire			rst;
-	input wire			compare;
-	input wire			read;
-	input wire[31:0] 	address_in;
-	input wire[31:0] 	data_in;
-	input wire[3:0]		byte_w_en;
-	input wire[255:0]	data_line_in;
+	input wire 			enable,
+	input wire			clk,
+	input wire			rst,
+	input wire			compare,
+	input wire			read,
+	input wire[31:0] 	address_in,
+	input wire[31:0] 	data_in,
+	input wire[3:0]		byte_w_en,
+	input wire[255:0]	data_line_in,
 
-	output reg			hit;
-	output reg 			dirty;
-	output reg  		valid;
-	output wire[31:0]   data_out;
-	output wire[31:0]	address_out;
-	output wire[255:0]	data_line_out;
+	output wire			hit,
+	output wire 		dirty,
+	output wire  		valid,
+	output wire[31:0]   data_out,
+	output wire[31:0]	address_out,
+	output wire[255:0]	data_line_out
 );
 
 	wire   			enable0, enable1;

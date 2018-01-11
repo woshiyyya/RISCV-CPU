@@ -1,3 +1,5 @@
+`include "cache_control.v"
+`include "dcache_two_way_group.v"
 module cache_top(
 	//Input
 	rst, clk, 

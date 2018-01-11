@@ -10,6 +10,8 @@
 `include "pc_reg.v"
 `include "ex_mem.v"
 `include "data_ram.v"
+`include "cache_manage_unit.v"
+
 
 module openmips(
 
@@ -105,6 +107,21 @@ module openmips(
 	wire            memory_ce_i;
 	wire[`RegBus]	memory_data_o;	
 
+	wire 			cache_read_i;
+	wire 			cache_write_i;
+	wire [29:0] 	cache_reduced_addr_i;
+	wire 			cache_stall_i;
+	wire [3:0]		cache_sel_i;
+
+
+	wire [31:0]		cache_wdata_i;
+	wire [31:0]		mem_cache_data_i;
+	wire 			ram_ready_o;
+	wire [255:0]	ram_block_o;
+	wire 			ram_en_o;
+	wire 			ram_write_o;
+	wire [29:0]		ram_addr_o;
+	wire [255:0]	dc_data_writeback;
 
 
 
@@ -113,6 +130,7 @@ module openmips(
 		.rst(rst),
 		.stallreq_from_id(id_stallreq),
 		.stallreq_from_ex(ex_stallreq),
+		.stallreq_from_mem(cache_stall_i),//$
 
 		.if_branch_i(ex_if_branch_o),
 		.branch_flag_i(ex_branch_flag_o),
@@ -288,32 +306,59 @@ module openmips(
 		.mem_mem_addr(mem_mem_addr_i),
 		.mem_mem_data(mem_mem_data_i)				       	
 	);
+
+
+
+	cache_manage_unit cache0(
+		.clk				(clk),//
+		.rst				(rst),//
+		//From Mem
+		.dc_read_in			(cache_read_i),//
+		.dc_write_in		(cache_write_i),//
+		.dc_byte_w_en_in	(cache_sel_i),//
+		.dc_addr			(cache_reduced_addr_i),//
+		.data_from_reg		(cache_wdata_i),//
+		//To Mem
+		.dc_data_out		(mem_cache_data_i),
+		//To ctrl
+		.mem_stall			(cache_stall_i),//
+		//From RAM
+		.ram_ready			(ram_ready_o),
+		.block_from_ram		(ram_block_o),
+		//To RAM
+		.ram_en_out			(ram_en_o),
+		.ram_write_out		(ram_write_o),
+		.ram_addr_out		(ram_addr_o),
+		.dc_data_wb			(dc_data_writeback)	
+	);
 	
   //MEMģ   
 	mem mem0(
-		.rst(rst),
+		.rst				(rst),
 		
-		.aluop_i(mem_aluop_i),
-		.wd_i(mem_wd_i),
-		.wreg_i(mem_wreg_i),
-		.wdata_i(mem_wdata_i),
+		.aluop_i			(mem_aluop_i),
+		.wd_i				(mem_wd_i),
+		.wreg_i				(mem_wreg_i),
+		.wdata_i			(mem_wdata_i),
 
-		.mem_ce_i(mem_mem_ce_i),
-		.mem_addr_i(mem_mem_addr_i),	
-	  	.mem_sdata_i(mem_mem_data_i),
-		.mem_data_i(memory_data_o),
+		.mem_ce_i			(mem_mem_ce_i),
+		.mem_addr_i			(mem_mem_addr_i),	
+	  	.mem_sdata_i		(mem_mem_data_i),
+		.mem_data_i			(mem_cache_data_i),
 
 
-		.wd_o(mem_wd_o),
-		.wreg_o(mem_wreg_o),
-		.wdata_o(mem_wdata_o),
+		.wd_o				(mem_wd_o),
+		.wreg_o				(mem_wreg_o),
+		.wdata_o			(mem_wdata_o),
 //		.stallreq(),	
 
-		.mem_addr_o(memory_addr_i),
-		.mem_we_o(memory_we_i),
-		.mem_data_o(memory_data_i),
-		.mem_sel_o(memory_sel_i),
-		.mem_ce_o(memory_ce_i)
+		.mem_addr_o			(memory_addr_i),
+		.mem_reduced_addr_o	(cache_reduced_addr_i),
+		.mem_we_o			(cache_write_i),
+		.mem_re_o			(cache_read_i),
+		.mem_data_o			(cache_wdata_i),
+		.mem_sel_o			(cache_sel_i),
+		.mem_ce_o			(memory_ce_i)
 	);
 
   //MEM/WBģ 
@@ -332,13 +377,14 @@ module openmips(
 	);
 
 	data_ram data_ram0(
-		.clk(clk),
-		.ce(memory_ce_i),
-		.we(memory_we_i),
-		.addr(memory_addr_i),
-		.sel(memory_sel_i),
-		.data_i(memory_data_i),
-		.data_o(memory_data_o)
-	);
+		.clk		(clk),
+		.enable		(ram_en_o),
+		.we 		(ram_write_o),
+		.addr		(ram_addr_o),
+		.wb_data 	(dc_data_writeback),
+
+		.ready_o	(ram_ready_o),
+		.block_o    (ram_block_o)
+	);	
 
 endmodule

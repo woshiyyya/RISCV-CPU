@@ -20,7 +20,9 @@ module mem(
 
 	//Message to memory unit
 	output reg[`RegBus]          	mem_addr_o,
+	output wire[29:0]				mem_reduced_addr_o,
 	output wire					 	mem_we_o,
+	output wire 					mem_re_o,
 	output reg[3:0]              	mem_sel_o,
 	output reg[`RegBus]          	mem_data_o,
 	output reg                   	mem_ce_o,
@@ -36,6 +38,7 @@ module mem(
 	assign zero32 = `ZeroWord;
 	assign stallreq = (((aluop_i[6:0] == `OP_LOAD) || (aluop_i[6:0] == `OP_STORE))
 												&& (fetching_data == 1'b1)) ? 1'b1 : 1'b0;
+	assign mem_reduced_addr_o = {mem_addr_i[31:2]};
 
 	always @ (*) begin
 		if(rst == `RstEnable) begin

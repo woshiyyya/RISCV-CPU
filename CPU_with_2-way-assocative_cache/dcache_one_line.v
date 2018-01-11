@@ -1,20 +1,20 @@
 module dcache_one_line(
-	input wire 			enable;
-	input wire			clk;
-	input wire			rst;
-	input wire			compare;  //whether need comparation or load from lower memory
-	input wire			read;
-	input wire[31:0] 	address_in;
-	input wire[31:0]	data_in;
-	input wire[3:0]		byte_w_en;
-	input wire[255:0]	data_line_in;
+	input wire 			enable,
+	input wire			clk,
+	input wire			rst,
+	input wire			compare,  //whether need comparation or load from lower memory
+	input wire			read,
+	input wire[31:0] 	address_in,
+	input wire[31:0]	data_in,
+	input wire[3:0]		byte_w_en,
+	input wire[255:0]	data_line_in,
 
-	output reg			hit;
-	output reg 			dirty;
-	output reg  		valid;
-	output reg[31:0]	address_out;
-	output reg[31:0]	data_out;
-	output reg[255:0]	data_line_out;
+	output wire			hit,
+	output wire 		dirty,
+	output wire  		valid,
+	output wire[31:0]	address_out,
+	output reg[31:0]	data_out,
+	output reg[255:0]	data_line_out
 	);
 	/*
 	+---+---+---+---+---+---+---+

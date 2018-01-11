@@ -225,7 +225,7 @@ module id(
 								&& (ex_wd_i == reg2_addr_o)) begin
 			if(op == `OP_STORE) begin
 				reg2_o <= imm;
-				mem_sdata_o <= reg2_data_i; 
+				mem_sdata_o <= ex_wdata_i; 
 			end else begin
 				reg2_o <= ex_wdata_i;
 			end
@@ -233,7 +233,7 @@ module id(
 								&& (mem_wd_i == reg2_addr_o)) begin
 			if(op == `OP_STORE) begin
 				reg2_o <= imm;
-				mem_sdata_o <= reg2_data_i; 
+				mem_sdata_o <= mem_wdata_i; 
 			end else begin
 				reg2_o <= mem_wdata_i;
 			end	

@@ -3,49 +3,27 @@
 module data_ram(
 
 	input wire							clk,
-	input wire							ce,
+	input wire							enable,
 	input wire							we,
-	input wire[`DataAddrBus]			addr,
-	input wire[3:0]						sel,
-	input wire[`DataBus]				data_i,
-	output reg[`DataBus]				data_o
-	
-);
+	input wire [29:0]					addr,	
+	input wire [255:0]					wb_data,
 
-	reg[`ByteWidth]  data_mem0[0:`DataMemNum-1];
-	reg[`ByteWidth]  data_mem1[0:`DataMemNum-1];
-	reg[`ByteWidth]  data_mem2[0:`DataMemNum-1];
-	reg[`ByteWidth]  data_mem3[0:`DataMemNum-1];
+	output reg 							ready_o,
+	output reg [255:0]					block_o
+);
+	reg[255:0]		memory[1000];
 
 	always @ (posedge clk) begin
-		if (ce == `ChipDisable) begin
-			//data_o <= ZeroWord;
-		end else if(we == `WriteEnable) begin
-			  if (sel[3] == 1'b1) begin
-		      data_mem3[addr[`DataMemNumLog2+1:2]] <= data_i[31:24];
-		    end
-			  if (sel[2] == 1'b1) begin
-		      data_mem2[addr[`DataMemNumLog2+1:2]] <= data_i[23:16];
-		    end
-		    if (sel[1] == 1'b1) begin
-		      data_mem1[addr[`DataMemNumLog2+1:2]] <= data_i[15:8];
-		    end
-			  if (sel[0] == 1'b1) begin
-		      data_mem0[addr[`DataMemNumLog2+1:2]] <= data_i[7:0];
-		    end			   	    
-		end
-	end
-	
-	always @ (*) begin
-		if (ce == `ChipDisable) begin
-			data_o <= `ZeroWord;
-	  end else if(we == `WriteDisable) begin
-		    data_o <= {data_mem3[addr[`DataMemNumLog2+1:2]],
-		               data_mem2[addr[`DataMemNumLog2+1:2]],
-		               data_mem1[addr[`DataMemNumLog2+1:2]],
-		               data_mem0[addr[`DataMemNumLog2+1:2]]};
-		end else begin
-				data_o <= `ZeroWord;
+		if(enable == `ChipDisable) begin
+			block_o <= 256'b0;
+			ready_o <= 1'b1;
+		end else if(we == 1'b0) begin   //read
+			block_o <= memory[addr];
+			ready_o <= 1'b0;
+		end else if(we == 1'b1) begin   //write
+			memory[addr] <= wb_data;
+			block_o <= 256'b0;
+			ready_o <= 1'b0;
 		end
 	end		
 
